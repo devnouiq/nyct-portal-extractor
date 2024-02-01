@@ -66,7 +66,7 @@ To use the script with a PostgreSQL database locally on a Windows machine, follo
 
 ## DB Schema
 
-   ![db_Schema](image.png)
+   ![db_Schema](./images/image.png)
 
 ## Steps for Authentication
 
@@ -100,7 +100,7 @@ To use the script with a PostgreSQL database locally on a Windows machine, follo
       - Paste the copied JSON into the `cookie.json` file and save it.
 
    Example :
-   ![cookies](image-1.png)
+   ![cookies](./images/image-1.png)
 
 ## Usage
 
