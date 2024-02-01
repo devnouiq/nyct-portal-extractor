@@ -13,38 +13,123 @@ This script is designed to scrape data from a specific website and store it in a
    pip install beautifulsoup4
    pip install psycopg2
    pip install argparse
+   pip install json
    ```
 
-2. Ensure that you have a PostgreSQL database set up.
+## Setting up PostgreSQL Locally on Windows
+
+To use the script with a PostgreSQL database locally on a Windows machine, follow these steps:
+
+## PostgreSQL Installation
+
+   1. Download the PostgreSQL installer for Windows from the official website: [PostgreSQL Downloads](https://www.postgresql.org/download/windows/)
+
+   2. Run the installer and follow the on-screen instructions to install PostgreSQL. During the installation, take note of the following:
+
+      - PostgreSQL Database Superuser: **your_postgres_user**
+      - PostgreSQL Database Password: **your_postgres_password**
+      - PostgreSQL Port: **5432** (default)
+
+   3. Complete the installation process.
+
+## Database Configuration
+
+   1. Open a command prompt and navigate to the PostgreSQL `bin` directory. This is typically located in the PostgreSQL installation directory. For example:
+
+      ```bash
+      cd C:\Program Files\PostgreSQL\your_postgres_version\bin
+      ```
+
+   2. Initialize a new PostgreSQL database. Replace **your_database_name** with the desired name for your database:
+
+      ```bash
+      createdb -U your_postgres_user -O your_postgres_user -h localhost -p 5432 your_database_name
+      ```
+
+      Enter the PostgreSQL password when prompted.
+
+## Update `DB_CONFIG` in the Script
+
+   1. Open the `script.py` file in a text editor.
+
+   2. Locate the `DB_CONFIG` dictionary and update it with the PostgreSQL configuration:
+
+      ```python
+      DB_CONFIG = {
+         "dbname": "your_database_name",
+         "user": "your_postgres_user",
+         "password": "your_postgres_password",
+         "host": "localhost",
+         "port": "5432",
+      }
+      ```
+
+## DB Schema
+
+   ![db_Schema](image.png)
+
+## Steps for Authentication
+
+   1. **Open Developer Console:**
+      - After logging in, navigate to the website.
+      - Open the browser's developer console using `Ctrl+Shift+I`.
+
+   2. **Run the Following Command:**
+      - Once the console is open, paste and run the following JavaScript command:
+
+      ```javascript
+      cookieStore.getAll().then(cookies => {
+         const combinedCookies = {};
+
+         cookies.forEach(cookie => {
+            const { name, value } = cookie;
+            combinedCookies[name] = value;
+         });
+
+         const jsonCookies = JSON.stringify(combinedCookies, null, 2);
+         console.log(jsonCookies);
+      });
+      ```
+
+   3. **Copy JSON Output:**
+      - After running the command, the console will display a JSON representation of the cookies.
+
+   4. **Save to `cookie.json` File:**
+      - Copy the entire JSON output.
+      - Create or open the `cookie.json` file.
+      - Paste the copied JSON into the `cookie.json` file and save it.
+
+   Example :
+   ![cookies](image-1.png)
 
 ## Usage
 
-1. Clone the repository:
+   1. Clone the repository:
 
-   ```bash
-   git clone https://github.com/your-username/nyct-portal-extractor.git
-   ```
+      ```bash
+      git clone https://github.com/your-username/nyct-portal-extractor.git
+      ```
 
-2. Navigate to the project directory:
+   2. Navigate to the project directory:
 
-   ```bash
-   cd nyct-portal-extractor
-   ```
+      ```bash
+      cd nyct-portal-extractor
+      ```
 
-3. Run the script with the following command:
+   3. Run the script with the following command:
 
-   ```bash
-   python script.py [--name NAME]
-   ```
+      ```bash
+      python script.py [--name NAME]
+      ```
 
-   or 
+      or 
 
-   ```bash
-   python script.py
-   ```
+      ```bash
+      python script.py
+      ```
 
   ### Note:
-  The optional `--name` argument allows you to specify a carrier name for which you want to extract data. If not provided, the script will run for all carriers.
+      The optional `--name` argument allows you to specify a carrier name for which you want to extract data. If not provided, the script will run for all carriers.
 
 
    Adjust the following parameters in the script according to your requirements:
@@ -61,22 +146,6 @@ This script is designed to scrape data from a specific website and store it in a
 
    Modify the `headers` dictionary as needed for your specific web scraping requirements.
 
-## Database Connection
-
-Ensure the `DB_CONFIG` dictionary in the script matches your PostgreSQL database configuration:
-
-```python
-DB_CONFIG = {
-    "dbname": "your_database_name",
-    "user": "your_database_user",
-    "password": "your_database_password",
-    "host": "your_database_host",
-    "port": "your_database_port",
-}
-```
-
-![db_Schema](image.png)
-
 ## Data Extraction
 
 The main data extraction function is `retrieve_all_data()`. Customize this function in the `data_extraction` module according to the structure of the data you are scraping from the website.
@@ -91,41 +160,14 @@ To update the data in the database, checkout the `update_operations` script. You
 
 To run this script:
 
-```bash
-python update_operations.py
-```
-
-## Additional Steps for Authentication
-
-After logging in or using guest login on the website, open the console using `ctrl+shift+i` and run the following command:
-
-```javascript
-cookieStore.getAll().then(cookies => {
-  const combinedCookies = {};
-
-  cookies.forEach(cookie => {
-    const { name, value } = cookie;
-    combinedCookies[name] = value;
-  });
-
-  console.log(combinedCookies);
-});
-```
-
-Copy the values obtained and paste them in the `script.py` - `get_cookies()`:
-
-```python
-  "PHPSESSID": "",
-  "ZDEDebuggerPresent": "",
-  "publicId_gctusa_gctces": "",
-  "settings_gctusa_gctces": "",
-  "sidebarNav_gctusa_gctces": "",
-```
+   ```bash
+   python update_operations.py
+   ```
 
 ## Logging
 
 Logging is configured to display information messages. You can modify the logging level in the script based on your preferences.
 
-```python
-logging.basicConfig(level=logging.INFO)
-```
+   ```python
+   logging.basicConfig(level=logging.INFO)
+   ```

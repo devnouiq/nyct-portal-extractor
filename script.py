@@ -4,30 +4,30 @@ import logging
 import psycopg2
 from data_extraction import get_soup, retrieve_all_data
 from bs4 import BeautifulSoup
+import json
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 DB_CONFIG = {
-    "dbname": "your_database_name",
-    "user": "your_database_user",
-    "password": "your_database_password",
-    "host": "your_database_host",
-    "port": 5432
+   "dbname": "your_database_name",
+   "user": "your_postgres_user",
+   "password": "your_postgres_password",
+   "host": "localhost",
+   "port": "5432",
 }
 
 URL_TEMPLATE = "https://nyctportal.global-terminal.com/gctusa/gctces/index.php?pageId=37&q=*&start={}&count=20"
 
 # example cookies
 def get_cookies():
-    return {
-        "PHPSESSID": "9n2t51adoobk9d8e0i394mjiha5o0a8h",
-        "ZDEDebuggerPresent": "php,phtml,php3",
-        "publicId_gctusa_gctces": "65b881b02f5dc9.09483808",
-        "settings_gctusa_gctces": "%7B%22altuser%22%3A%2265b881b02f5dc9.09483808%22%7D",
-        "sidebarNav_gctusa_gctces": "%7B%22width%22%3A193%7D",
-    }
-
+    try:
+        with open("cookie.json", "r") as file:
+            cookies = json.load(file)
+            logger.debug(cookies)
+            return cookies
+    except json.JSONDecodeError as e:
+        logger.error(f"Error decoding JSON: {e}")
 
 def get_headers(cookies):
     return {
