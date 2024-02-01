@@ -16,121 +16,116 @@ This script is designed to scrape data from a specific website and store it in a
    pip install json
    ```
 
-## Setting up PostgreSQL Locally on Windows
+### PostgreSQL Installation
 
-To use the script with a PostgreSQL database locally on a Windows machine, follow these steps:
+1. Download the PostgreSQL installer for Windows from the official website: [PostgreSQL Downloads](https://www.postgresql.org/download/windows/)
 
-## PostgreSQL Installation
+2. Run the installer and follow the on-screen instructions to install PostgreSQL. During the installation, take note of the following:
 
-   1. Download the PostgreSQL installer for Windows from the official website: [PostgreSQL Downloads](https://www.postgresql.org/download/windows/)
+   - PostgreSQL Database Superuser: **your_postgres_user**
+   - PostgreSQL Database Password: **your_postgres_password**
+   - PostgreSQL Port: **5432** (default)
 
-   2. Run the installer and follow the on-screen instructions to install PostgreSQL. During the installation, take note of the following:
+3. Complete the installation process.
 
-      - PostgreSQL Database Superuser: **your_postgres_user**
-      - PostgreSQL Database Password: **your_postgres_password**
-      - PostgreSQL Port: **5432** (default)
+### Database Configuration
 
-   3. Complete the installation process.
+1. Open a command prompt and navigate to the PostgreSQL `bin` directory. This is typically located in the PostgreSQL installation directory. For example:
 
-## Database Configuration
+   ```bash
+   cd C:\Program Files\PostgreSQL\your_postgres_version\bin
+   ```
 
-   1. Open a command prompt and navigate to the PostgreSQL `bin` directory. This is typically located in the PostgreSQL installation directory. For example:
+2. Initialize a new PostgreSQL database. Replace **your_database_name** with the desired name for your database:
 
-      ```bash
-      cd C:\Program Files\PostgreSQL\your_postgres_version\bin
-      ```
+   ```bash
+   createdb -U your_postgres_user -O your_postgres_user -h localhost -p 5432 your_database_name
+   ```
 
-   2. Initialize a new PostgreSQL database. Replace **your_database_name** with the desired name for your database:
+   Enter the PostgreSQL password when prompted.
 
-      ```bash
-      createdb -U your_postgres_user -O your_postgres_user -h localhost -p 5432 your_database_name
-      ```
+### Update `DB_CONFIG` in the Script
 
-      Enter the PostgreSQL password when prompted.
+1. Open the `script.py` file in a text editor.
 
-## Update `DB_CONFIG` in the Script
+2. Locate the `DB_CONFIG` dictionary and update it with the PostgreSQL configuration:
 
-   1. Open the `script.py` file in a text editor.
-
-   2. Locate the `DB_CONFIG` dictionary and update it with the PostgreSQL configuration:
-
-      ```python
-      DB_CONFIG = {
-         "dbname": "your_database_name",
-         "user": "your_postgres_user",
-         "password": "your_postgres_password",
-         "host": "localhost",
-         "port": "5432",
-      }
-      ```
+   ```python
+   DB_CONFIG = {
+      "dbname": "your_database_name",
+      "user": "your_postgres_user",
+      "password": "your_postgres_password",
+      "host": "localhost",
+      "port": "5432",
+   }
+   ```
 
 ## DB Schema
 
-   ![db_Schema](./images/image.png)
+![db_Schema](./images/image.png)
 
 ## Steps for Authentication
 
-   1. **Open Developer Console:**
-      - After logging in, navigate to the website.
-      - Open the browser's developer console using `Ctrl+Shift+I`.
+1. **Open Developer Console:**
+   - After logging in, navigate to the website.
+   - Open the browser's developer console using `Ctrl+Shift+I`.
 
-   2. **Run the Following Command:**
-      - Once the console is open, paste and run the following JavaScript command:
+2. **Run the Following Command:**
+   - Once the console is open, paste and run the following JavaScript command:
 
-      ```javascript
-      cookieStore.getAll().then(cookies => {
-         const combinedCookies = {};
+   ```javascript
+   cookieStore.getAll().then(cookies => {
+      const combinedCookies = {};
 
-         cookies.forEach(cookie => {
-            const { name, value } = cookie;
-            combinedCookies[name] = value;
-         });
-
-         const jsonCookies = JSON.stringify(combinedCookies, null, 2);
-         console.log(jsonCookies);
+      cookies.forEach(cookie => {
+         const { name, value } = cookie;
+         combinedCookies[name] = value;
       });
-      ```
 
-   3. **Copy JSON Output:**
-      - After running the command, the console will display a JSON representation of the cookies.
+      const jsonCookies = JSON.stringify(combinedCookies, null, 2);
+      console.log(jsonCookies);
+   });
+   ```
 
-   4. **Save to `cookie.json` File:**
-      - Copy the entire JSON output.
-      - Create or open the `cookie.json` file.
-      - Paste the copied JSON into the `cookie.json` file and save it.
+3. **Copy JSON Output:**
+   - After running the command, the console will display a JSON representation of the cookies.
+
+4. **Save to `cookie.json` File:**
+   - Copy the entire JSON output.
+   - Create or open the `cookie.json` file.
+   - Paste the copied JSON into the `cookie.json` file and save it.
 
    Example :
    ![cookies](./images/image-1.png)
 
 ## Usage
 
-   1. Clone the repository:
+1. Clone the repository:
 
-      ```bash
-      git clone https://github.com/your-username/nyct-portal-extractor.git
-      ```
+   ```bash
+   git clone https://github.com/your-username/nyct-portal-extractor.git
+   ```
 
-   2. Navigate to the project directory:
+2. Navigate to the project directory:
 
-      ```bash
-      cd nyct-portal-extractor
-      ```
+   ```bash
+   cd nyct-portal-extractor
+   ```
 
-   3. Run the script with the following command:
+3. Run the script with the following command:
 
-      ```bash
-      python script.py [--name NAME]
-      ```
+   ```bash
+   python script.py [--name NAME]
+   ```
 
-      or 
+   or 
 
-      ```bash
-      python script.py
-      ```
+   ```bash
+   python script.py
+   ```
 
-  ### Note:
+   ### Note:
       The optional `--name` argument allows you to specify a carrier name for which you want to extract data. If not provided, the script will run for all carriers.
-
 
    Adjust the following parameters in the script according to your requirements:
 
