@@ -2,6 +2,7 @@ import requests
 import argparse
 import logging
 import psycopg2
+import time  # Importing time for sleep
 from data_extraction import get_soup, retrieve_all_data
 from bs4 import BeautifulSoup
 import json
@@ -57,20 +58,22 @@ def connect_to_database():
     return psycopg2.connect(**DB_CONFIG)
 
 
-def run_single_request(url, cursor):
+def run_single_request(url, cursor, sleep_interval):
+    time.sleep(sleep_interval)  # Sleep for the specified interval
     soup = get_soup(url, get_headers(get_cookies()))
 
     if soup:
         retrieve_all_data(soup, cursor)
 
 def fetch_and_process_data(args, cursor, last_carrier_id):
+    sleep_interval = int(args.sleep) if args.sleep else 10  # Default sleep interval is 10 seconds
+    num_requests = int(args.count) if args.count else 1  # Default to 1 request if count is not specified
+
     if args.name:
         url = f"https://nyctportal.global-terminal.com/gctusa/gctces/index.php?pageId=61&tabId=&scac={args.name}"
         logger.info(f"Running for carrier: {args.name}")
-        run_single_request(url, cursor)
+        run_single_request(url, cursor, sleep_interval)
     else:
-        num_requests = 1
-
         for _ in range(num_requests):
             start_value = last_carrier_id
             list_url = URL_TEMPLATE.format(start_value)
@@ -82,15 +85,15 @@ def fetch_and_process_data(args, cursor, last_carrier_id):
                 name = item.get("name")
                 url = f"https://nyctportal.global-terminal.com/gctusa/gctces/index.php?pageId=61&tabId=&scac={name}"
                 logger.info(f"Running for carrier: {name}")
-                run_single_request(url, cursor)
+                run_single_request(url, cursor, sleep_interval)
 
 
 def main():
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--name', help='Specify a carrier name for the URL')
-    parser.add_argument('--count', help='Specify number of requests to scrape')
-    parser.add_argument('--sleep', help='Specify the sleep interval')
-    parser.add_argument('--operation_type', help='Specify the sleep interval')
+    parser.add_argument('--count', type=int, help='Specify number of requests to scrape')
+    parser.add_argument('--sleep', type=int, help='Specify the sleep interval in seconds')
+    parser.add_argument('--operation_type', help='Specify the operation type')  # Not sure how you intend to use this, left unchanged
 
     args = parser.parse_args()
 
