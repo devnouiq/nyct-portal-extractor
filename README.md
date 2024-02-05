@@ -9,11 +9,14 @@ This script is designed to scrape data from a specific website and store it in a
 1. Install the required Python libraries:
 
    ```bash
+   pip3 install virtualenv
+   virtualenv env
+   source venv/bin/activate
+   sudo apt-get install --reinstall libpq-dev
    pip install requests
    pip install beautifulsoup4
    pip install psycopg2
    pip install argparse
-   pip install json
    ```
 
 ### PostgreSQL Installation
