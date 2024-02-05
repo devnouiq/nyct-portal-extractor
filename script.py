@@ -88,6 +88,10 @@ def fetch_and_process_data(args, cursor, last_carrier_id):
 def main():
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--name', help='Specify a carrier name for the URL')
+    parser.add_argument('--count', help='Specify number of requests to scrape')
+    parser.add_argument('--sleep', help='Specify the sleep interval')
+    parser.add_argument('--operation_type', help='Specify the sleep interval')
+
     args = parser.parse_args()
 
     with connect_to_database() as conn:
