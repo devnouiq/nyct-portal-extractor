@@ -10,6 +10,8 @@ import json
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+BASE_URL="https://nyctportal.global-terminal.com/gctusa/gctces/index.php"
+
 DB_CONFIG = {
    "dbname": "your_database_name",
    "user": "your_postgres_user",
@@ -18,9 +20,8 @@ DB_CONFIG = {
    "port": "5432",
 }
 
-URL_TEMPLATE = "https://nyctportal.global-terminal.com/gctusa/gctces/index.php?pageId=37&q=*&start={}&count=20"
+URL_TEMPLATE = f"{BASE_URL}?pageId=37&q=*&start={{}}&count=20"
 
-# example cookies
 def get_cookies():
     try:
         with open("cookie.json", "r") as file:
@@ -69,23 +70,29 @@ def fetch_and_process_data(args, cursor, last_carrier_id):
     sleep_interval = int(args.sleep) if args.sleep else 10  # Default sleep interval is 10 seconds
     num_requests = int(args.count) if args.count else 1  # Default to 1 request if count is not specified
 
-    if args.name:
-        url = f"https://nyctportal.global-terminal.com/gctusa/gctces/index.php?pageId=61&tabId=&scac={args.name}"
-        logger.info(f"Running for carrier: {args.name}")
+    if args.operation_type == "new":
+        if args.name:
+            url = f"{BASE_URL}?pageId=61&tabId=&scac={args.name}"
+            logger.info(f"Running for carrier: {args.name}")
+            run_single_request(url, cursor, sleep_interval)
+        else:
+            for _ in range(num_requests):
+                start_value = last_carrier_id
+                list_url = URL_TEMPLATE.format(start_value)
+
+                res = requests.get(list_url, headers=get_headers(get_cookies()))
+                data = res.json()
+
+                for item in data.get("items", []):
+                    name = item.get("name")
+                    url = f"{BASE_URL}?pageId=61&tabId=&scac={name}"
+                    logger.info(f"Running for carrier: {name}")
+                    run_single_request(url, cursor, sleep_interval)
+    elif args.operation_type == "update" and args.name:
+        logger.info(f"Updating data for specific carrier: {args.name}")
+        url = f"{BASE_URL}?pageId=61&tabId=&scac={args.name}"
         run_single_request(url, cursor, sleep_interval)
-    else:
-        for _ in range(num_requests):
-            start_value = last_carrier_id
-            list_url = URL_TEMPLATE.format(start_value)
-
-            res = requests.get(list_url, headers=get_headers(get_cookies()))
-            data = res.json()
-
-            for item in data.get("items", []):
-                name = item.get("name")
-                url = f"https://nyctportal.global-terminal.com/gctusa/gctces/index.php?pageId=61&tabId=&scac={name}"
-                logger.info(f"Running for carrier: {name}")
-                run_single_request(url, cursor, sleep_interval)
+        
 
 
 def main():
@@ -93,7 +100,7 @@ def main():
     parser.add_argument('--name', help='Specify a carrier name for the URL')
     parser.add_argument('--count', type=int, help='Specify number of requests to scrape')
     parser.add_argument('--sleep', type=int, help='Specify the sleep interval in seconds')
-    parser.add_argument('--operation_type', help='Specify the operation type')  # Not sure how you intend to use this, left unchanged
+    parser.add_argument('--operation_type', help='Specify the operation type')
 
     args = parser.parse_args()
 

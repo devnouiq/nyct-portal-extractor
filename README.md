@@ -117,32 +117,34 @@ This script is designed to scrape data from a specific website and store it in a
 
 3. Run the script with the following command:
 
-   ```bash
-   python script.py [--name NAME]
-   ```
+   1. **Update Specific Carrier:**
+      - To update data for a specific carrier, use the following command:
+      ```bash
+      python script.py --name "carrier-name" --operation_type update
+      ```
 
-   or 
+   2. **Normal Operation:**
+      - To run normally for a carrier or all carriers, use the following commands:
+      - For a specific carrier:
+         ```bash
+         python script.py --name "carrier-name" --operation_type new
+         ```
+      - For all carriers (default 20 requests):
+         ```bash
+         python script.py --operation_type new
+         ```
+      - With a custom sleep interval (default 10 seconds):
+         ```bash
+         python script.py --sleep "time-in-seconds" --operation_type new
+         ```
+      - With a custom number of sets (each set represents 20 requests, default is 1 set):
+         ```bash
+         python script.py --count "number-value" --operation_type new
+         ```
 
-   ```bash
-   python script.py
-   ```
+         For example, if you specify `--count 4`, it will run for 4 sets of 20 requests each, resulting in a total of 80 requests.
 
-   ### Note:
-      The optional `--name` argument allows you to specify a carrier name for which you want to extract data. If not provided, the script will run for all carriers.
-
-   Adjust the following parameters in the script according to your requirements:
-
-   ```python
-   num_requests = 1  # Set the number of requests to be sent
-   ```
-
-   This script is designed to handle pagination automatically. It sends requests to the specified URL template with different start values to retrieve sets of data.
-
-   ```python
-   url_template = "https://nyctportal.global-terminal.com/gctusa/gctces/index.php?pageId=37&q=*&start={}&count=20"
-   ```
-
-   Modify the `headers` dictionary as needed for your specific web scraping requirements.
+   Adjust the command-line arguments based on your specific needs. The script will now consider the specified arguments for carrier name, request count, sleep interval, and operation type.
 
 ## Data Extraction
 
@@ -151,16 +153,6 @@ The main data extraction function is `retrieve_all_data()`. Customize this funct
 ```python
 retrieve_all_data(soup, conn, cursor)
 ```
-
-## Update Operations
-
-To update the data in the database, checkout the `update_operations` script. You can change and update specific data using the ID of specific tables. Customize the update operations according to your needs.
-
-To run this script:
-
-   ```bash
-   python update_operations.py
-   ```
 
 ## Logging
 
