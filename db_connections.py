@@ -13,7 +13,6 @@ def create_carrier_info_table(cursor):
     '''
     cursor.execute(table_schema)
 
-
 def insert_data_into_carrier_info_table(cursor, data):
     insert_query = '''
     INSERT INTO carrier_info (carrier, carrier_name, status, address, telephone, email_address, contact_person)

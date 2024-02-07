@@ -11,7 +11,7 @@ This script is designed to scrape data from a specific website and store it in a
    ```bash
    pip3 install virtualenv
    virtualenv env
-   source venv/bin/activate
+   source env/bin/activate
    sudo apt-get install --reinstall libpq-dev
    pip install requests
    pip install beautifulsoup4
@@ -55,9 +55,9 @@ This script is designed to scrape data from a specific website and store it in a
 
    ```python
    DB_CONFIG = {
-      "dbname": "your_database_name",
-      "user": "your_postgres_user",
-      "password": "your_postgres_password",
+      "dbname": "nyct_portl",
+      "user": "nyct_user",
+      "password": "Apple@123",
       "host": "localhost",
       "port": "5432",
    }
@@ -106,7 +106,7 @@ This script is designed to scrape data from a specific website and store it in a
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/nyct-portal-extractor.git
+   git clone https://github.com/devnouiq/nyct-portal-extractor.git
    ```
 
 2. Navigate to the project directory:

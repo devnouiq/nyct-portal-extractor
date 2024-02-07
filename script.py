@@ -60,14 +60,15 @@ def connect_to_database():
     return psycopg2.connect(**DB_CONFIG)
 
 
-def run_single_request(url, cursor, sleep_interval):
+def run_single_request(url, cursor, sleep_interval,conn):
     time.sleep(sleep_interval)  # Sleep for the specified interval
     soup = get_soup(url, get_headers(get_cookies()))
 
     if soup:
         retrieve_all_data(soup, cursor)
+    conn.commit()
 
-def fetch_and_process_data(args, cursor, last_carrier_id):
+def fetch_and_process_data(args, cursor, last_carrier_id,conn):
     sleep_interval = int(args.sleep) if args.sleep else 10  # Default sleep interval is 10 seconds
     num_requests = int(args.count) if args.count else 1  # Default to 1 request if count is not specified
 
@@ -75,7 +76,7 @@ def fetch_and_process_data(args, cursor, last_carrier_id):
         if args.name:
             url = f"{BASE_URL}?pageId=61&tabId=&scac={args.name}"
             logger.info(f"Running for carrier: {args.name}")
-            run_single_request(url, cursor, sleep_interval)
+            run_single_request(url, cursor, sleep_interval,conn)
         else:
             start_value = last_carrier_id
             for _ in range(num_requests):
@@ -88,7 +89,7 @@ def fetch_and_process_data(args, cursor, last_carrier_id):
                     name = item.get("name")
                     url = f"{BASE_URL}?pageId=61&tabId=&scac={name}"
                     logger.info(f"Running for carrier: {name}")
-                    run_single_request(url, cursor, sleep_interval)
+                    run_single_request(url, cursor, sleep_interval,conn)
 
                 start_value += 20
     elif args.operation_type == "update" and args.name:
@@ -101,9 +102,9 @@ def fetch_and_process_data(args, cursor, last_carrier_id):
 def main():
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--name', help='Specify a carrier name for the URL')
-    parser.add_argument('--count', type=int, help='Specify number of requests to scrape')
-    parser.add_argument('--sleep', type=int, help='Specify the sleep interval in seconds')
-    parser.add_argument('--operation_type', help='Specify the operation type')
+    parser.add_argument('--count', type=int, help='Specify number of requests to scrape',default=10)
+    parser.add_argument('--sleep', type=int, help='Specify the sleep interval in seconds',default=1)
+    parser.add_argument('--operation_type', help='Specify the operation type',default='new', choices=['new', 'update'])
 
     args = parser.parse_args()
 
@@ -120,7 +121,9 @@ def main():
             else:
                 last_carrier_id = 0
 
-            fetch_and_process_data(args, cursor, last_carrier_id)
+            fetch_and_process_data(args, cursor, last_carrier_id,conn)
+            
+    
 
 if __name__ == "__main__":
     main()
