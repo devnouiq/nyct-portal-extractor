@@ -65,7 +65,7 @@ This script is designed to scrape data from a specific website and store it in a
 
 ## DB Schema
 
-![db_Schema](./images/image.png)
+![DB Schema](./images/image.png)
 
 ## Steps for Authentication
 
