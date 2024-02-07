@@ -28,9 +28,11 @@ def extract_carrier_info(soup):
     carrier_row = soup.find('td', class_='edit_data', colspan='3')
     if carrier_row:
         carrier_text = carrier_row.get_text(strip=True)
-        carrier_info['Carrier'] = carrier_text.replace('\xa0','')
-        
-    other_info = {}
+        carrier_info['Carrier'] = carrier_text.replace('\xa0','').split(':')[0].strip()
+        carrier_info['Carrier Name'] = (carrier_text.replace('\xa0', '').split(':', 1) + [''])[1].strip()
+
+
+
     other_rows = soup.find_all('tr')
     for row in other_rows:
         label = row.find('td', class_='edit_label')
@@ -38,19 +40,17 @@ def extract_carrier_info(soup):
         if label and data:
             label_text = label.get_text(strip=True).replace('\xa0', ' ')
             data_text = data.get_text(strip=True).replace('\xa0', ' ')
-            other_info[label_text] = data_text
+            carrier_info[label_text] = data_text
 
-    unnecessary_keys = ['', 'Terminal Auth']
-    result = {key: value for key, value in {**carrier_info, **other_info}.items() if key not in unnecessary_keys}
     data = (
-        result.get('Carrier', ''),
-        result.get('Status', ''),
-        result.get('Address', ''),
-        result.get('Telephone', ''),
-        result.get('Email Address', ''),
-        result.get('Contact Person', ''),
+        carrier_info.get('Carrier', '').split(':')[0].strip(),
+        carrier_info.get('Carrier Name', ''),
+        carrier_info.get('Status', ''),
+        carrier_info.get('Address', ''),
+        carrier_info.get('Telephone', ''),
+        carrier_info.get('Email Address', ''),
+        carrier_info.get('Contact Person', ''),
     )
-
     return data
 
 def extract_driver_info(soup):

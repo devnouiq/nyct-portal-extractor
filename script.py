@@ -6,6 +6,7 @@ import time  # Importing time for sleep
 from data_extraction import get_soup, retrieve_all_data
 from bs4 import BeautifulSoup
 import json
+import sys
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -20,7 +21,7 @@ DB_CONFIG = {
    "port": "5432",
 }
 
-URL_TEMPLATE = f"{BASE_URL}?pageId=37&q=*&start={{}}&count=20"
+URL_TEMPLATE = f"{BASE_URL}?pageId=37&q=*&start={{}}&count=19"
 
 def get_cookies():
     try:
@@ -76,8 +77,8 @@ def fetch_and_process_data(args, cursor, last_carrier_id):
             logger.info(f"Running for carrier: {args.name}")
             run_single_request(url, cursor, sleep_interval)
         else:
+            start_value = last_carrier_id
             for _ in range(num_requests):
-                start_value = last_carrier_id
                 list_url = URL_TEMPLATE.format(start_value)
 
                 res = requests.get(list_url, headers=get_headers(get_cookies()))
@@ -88,6 +89,8 @@ def fetch_and_process_data(args, cursor, last_carrier_id):
                     url = f"{BASE_URL}?pageId=61&tabId=&scac={name}"
                     logger.info(f"Running for carrier: {name}")
                     run_single_request(url, cursor, sleep_interval)
+
+                start_value += 20
     elif args.operation_type == "update" and args.name:
         logger.info(f"Updating data for specific carrier: {args.name}")
         url = f"{BASE_URL}?pageId=61&tabId=&scac={args.name}"
@@ -103,6 +106,11 @@ def main():
     parser.add_argument('--operation_type', help='Specify the operation type')
 
     args = parser.parse_args()
+
+    if not hasattr(sys, 'ps1') and not args.name and args.operation_type != 'new':
+        parser.error("If running the script, operation_type must be specified as 'new'.")
+    if args.operation_type == 'update' and not args.name:
+        parser.error("If operation type is 'update', you must specify a carrier name with --name.")
 
     with connect_to_database() as conn:
         with conn.cursor() as cursor:
