@@ -108,19 +108,38 @@ def retrieve_all_data(soup, cursor):
     create_carrier_info_table(cursor)
     carrier_name = carrier_info[0]
     insert_data_into_carrier_info_table(cursor, carrier_info)
-    logger.info("Data inserted into the 'carrier_info' table.")
+    logger.info("Data has been inserted into the 'carrier_info' table.")
     
     drivers = extract_driver_info(soup)
     create_drivers_table(cursor)
     insert_data_into_drivers_table(cursor, drivers, carrier_name)
-    logger.info("Data inserted into the 'drivers' table.")
+    logger.info("Data has been inserted into the 'drivers' table.")
 
     line_auth = extract_line_auth_info(soup)
     create_line_auth_table(cursor)
     insert_data_into_line_auth_table(cursor, line_auth, carrier_name)
-    logger.info("Data inserted into the 'line_Auth' table.")
+    logger.info("Data has been inserted into the 'line_Auth' table.")
 
     notes = extract_notes(soup)
     create_notes_table(cursor)
     insert_notes_data(cursor, notes, carrier_name)
-    logger.info("Data inserted into the 'notes' table.")
+    logger.info("Data has been inserted into the 'notes' table.")
+
+def update_data(soup, cursor):
+    carrier_info = extract_carrier_info(soup)
+    carrier_name = carrier_info[0]
+    
+    drivers = extract_driver_info(soup)
+    create_drivers_table(cursor)
+    insert_data_into_drivers_table(cursor, drivers, carrier_name)
+    logger.info("Data has been updated into the 'drivers' table.")
+    
+    line_auth = extract_line_auth_info(soup)
+    create_line_auth_table(cursor)
+    insert_data_into_line_auth_table(cursor, line_auth, carrier_name)
+    logger.info("Data has been updated into the 'line_Auth' table.")
+    
+    notes = extract_notes(soup)
+    create_notes_table(cursor)
+    insert_notes_data(cursor, notes, carrier_name)
+    logger.info("Data has been updated into the 'notes' table.")

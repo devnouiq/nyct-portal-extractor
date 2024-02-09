@@ -1,12 +1,11 @@
 import requests
 import argparse
-import logging
 import psycopg2
 import time  # Importing time for sleep
-from data_extraction import get_soup, retrieve_all_data
+from data_extraction import get_soup, retrieve_all_data, update_data
 from bs4 import BeautifulSoup
 import json
-import sys
+import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -14,9 +13,9 @@ logger = logging.getLogger(__name__)
 BASE_URL="https://nyctportal.global-terminal.com/gctusa/gctces/index.php"
 
 DB_CONFIG = {
-   "dbname": "your_database_name",
-   "user": "your_postgres_user",
-   "password": "your_postgres_password",
+   "dbname": "nyct_portl",
+   "user": "nyct_user",
+   "password": "Apple@123",
    "host": "localhost",
    "port": "5432",
 }
@@ -27,7 +26,6 @@ def get_cookies():
     try:
         with open("cookie.json", "r") as file:
             cookies = json.load(file)
-            logger.debug(cookies)
             return cookies
     except json.JSONDecodeError as e:
         logger.error(f"Error decoding JSON: {e}")
@@ -60,12 +58,13 @@ def connect_to_database():
     return psycopg2.connect(**DB_CONFIG)
 
 
-def run_single_request(url, cursor, sleep_interval,conn):
+def run_single_request(url, cursor, sleep_interval,conn, args):
     time.sleep(sleep_interval)  # Sleep for the specified interval
     soup = get_soup(url, get_headers(get_cookies()))
-
-    if soup:
+    if soup and args.operation_type != "update":
         retrieve_all_data(soup, cursor)
+    else:
+        update_data(soup, cursor)
     conn.commit()
 
 def fetch_and_process_data(args, cursor, last_carrier_id,conn):
@@ -76,7 +75,7 @@ def fetch_and_process_data(args, cursor, last_carrier_id,conn):
         if args.name:
             url = f"{BASE_URL}?pageId=61&tabId=&scac={args.name}"
             logger.info(f"Running for carrier: {args.name}")
-            run_single_request(url, cursor, sleep_interval,conn)
+            run_single_request(url, cursor, sleep_interval, conn, args)
         else:
             start_value = last_carrier_id
             for _ in range(num_requests):
@@ -89,13 +88,13 @@ def fetch_and_process_data(args, cursor, last_carrier_id,conn):
                     name = item.get("name")
                     url = f"{BASE_URL}?pageId=61&tabId=&scac={name}"
                     logger.info(f"Running for carrier: {name}")
-                    run_single_request(url, cursor, sleep_interval,conn)
+                    run_single_request(url, cursor, sleep_interval,conn, args)
 
                 start_value += 20
     elif args.operation_type == "update" and args.name:
         logger.info(f"Updating data for specific carrier: {args.name}")
         url = f"{BASE_URL}?pageId=61&tabId=&scac={args.name}"
-        run_single_request(url, cursor, sleep_interval)
+        run_single_request(url, cursor, sleep_interval, conn, args)
         
 
 
@@ -108,8 +107,6 @@ def main():
 
     args = parser.parse_args()
 
-    if not hasattr(sys, 'ps1') and not args.name and args.operation_type != 'new':
-        parser.error("If running the script, operation_type must be specified as 'new'.")
     if args.operation_type == 'update' and not args.name:
         parser.error("If operation type is 'update', you must specify a carrier name with --name.")
 
@@ -123,7 +120,6 @@ def main():
 
             fetch_and_process_data(args, cursor, last_carrier_id,conn)
             
-    
 
 if __name__ == "__main__":
     main()
