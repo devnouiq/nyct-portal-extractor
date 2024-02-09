@@ -12,8 +12,9 @@ from db_connections import (
     insert_notes_data
 )
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig()
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 def get_soup(url, headers):
     response = requests.get(url, headers=headers)

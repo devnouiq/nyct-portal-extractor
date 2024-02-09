@@ -1,6 +1,7 @@
 import logging
 
-logging.basicConfig(level=logging.ERROR)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.ERROR)
 
 def create_carrier_info_table(cursor):
     table_schema = '''

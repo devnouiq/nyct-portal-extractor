@@ -7,8 +7,9 @@ from bs4 import BeautifulSoup
 import json
 import logging
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig()
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 BASE_URL="https://nyctportal.global-terminal.com/gctusa/gctces/index.php"
 
