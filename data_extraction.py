@@ -1,6 +1,7 @@
 import requests
 import logging
 from bs4 import BeautifulSoup
+import re
 from db_connections import (
     create_carrier_info_table,
     create_drivers_table,
@@ -32,25 +33,37 @@ def extract_carrier_info(soup):
         carrier_info['Carrier'] = carrier_text.replace('\xa0','').split(':')[0].strip()
         carrier_info['Carrier Name'] = (carrier_text.replace('\xa0', '').split(':', 1) + [''])[1].strip()
 
-
-
     other_rows = soup.find_all('tr')
     for row in other_rows:
-        label = row.find('td', class_='edit_label')
-        data = row.find('td', class_='edit_data')
-        if label and data:
+        labels = row.find_all('td', class_='edit_label')
+        data_entries = row.find_all('td', class_='edit_data')
+        for label, data in zip(labels, data_entries):
             label_text = label.get_text(strip=True).replace('\xa0', ' ')
             data_text = data.get_text(strip=True).replace('\xa0', ' ')
             carrier_info[label_text] = data_text
 
+        checkbox_input = row.find('input', {'type': 'checkbox'})
+        value = 'true' if checkbox_input and 'checked' in checkbox_input.attrs else 'false'
+        
+        checkbox_label = row.find('label')
+        
+        if checkbox_label:
+            checkbox_label_text = checkbox_label.get_text(strip=True).replace('\xa0', ' ')
+            carrier_info[checkbox_label_text] = value
+
+    terminal_auth_str = carrier_info.get('Terminal Auth', '').lower()
+    terminal_auth = True if terminal_auth_str == 'true' else False
     data = (
         carrier_info.get('Carrier', '').split(':')[0].strip(),
         carrier_info.get('Carrier Name', ''),
         carrier_info.get('Status', ''),
+        carrier_info.get('Effective', ''),
         carrier_info.get('Address', ''),
         carrier_info.get('Telephone', ''),
+        carrier_info.get('FAX', ''),
         carrier_info.get('Email Address', ''),
-        carrier_info.get('Contact Person', ''),
+        re.sub(r'\s{2,}', ' ',carrier_info.get('Contact Person', '')),
+        terminal_auth
     )
     return data
 
@@ -129,18 +142,17 @@ def retrieve_all_data(soup, cursor):
 def update_data(soup, cursor):
     carrier_info = extract_carrier_info(soup)
     carrier_name = carrier_info[0]
-    
+    insert_data_into_carrier_info_table(cursor, carrier_info)
+    logger.info("Data has been updated into the 'carrier_info' table.")
+
     drivers = extract_driver_info(soup)
-    create_drivers_table(cursor)
     insert_data_into_drivers_table(cursor, drivers, carrier_name)
     logger.info("Data has been updated into the 'drivers' table.")
     
     line_auth = extract_line_auth_info(soup)
-    create_line_auth_table(cursor)
     insert_data_into_line_auth_table(cursor, line_auth, carrier_name)
     logger.info("Data has been updated into the 'line_Auth' table.")
     
     notes = extract_notes(soup)
-    create_notes_table(cursor)
     insert_notes_data(cursor, notes, carrier_name)
     logger.info("Data has been updated into the 'notes' table.")

@@ -10,21 +10,43 @@ def create_carrier_info_table(cursor):
         carrier VARCHAR(255) UNIQUE PRIMARY KEY,
         carrier_name VARCHAR(255),
         status VARCHAR(255),
+        effective VARCHAR(255),
         address VARCHAR(255),
         telephone VARCHAR(20),
+        fax VARCHAR(20),
         email_address VARCHAR(255),
-        contact_person VARCHAR(255)
+        contact_person VARCHAR(255),
+        terminal_auth BOOLEAN
     );
     '''
     cursor.execute(table_schema)
 
 def insert_data_into_carrier_info_table(cursor, data):
-    insert_query = '''
-    INSERT INTO carrier_info (carrier, carrier_name, status, address, telephone, email_address, contact_person)
-    VALUES (%s, %s, %s, %s, %s, %s, %s)
-    ON CONFLICT (carrier) DO NOTHING;
-    '''
-    cursor.execute(insert_query, data)
+    carrier, carrier_name, status, effective, address, telephone, fax, email_address, contact_person, terminal_auth = data
+
+    try:
+        cursor.execute("""
+            SELECT * FROM carrier_info WHERE carrier = %s;
+        """, (carrier,))
+        existing_record = cursor.fetchone()
+
+        if existing_record:
+            cursor.execute("""
+                UPDATE carrier_info
+                SET carrier_name = %s, status = %s, effective = %s, address = %s, telephone = %s, fax =%s,
+                email_address = %s, contact_person = %s, terminal_auth = %s
+                WHERE carrier = %s;
+            """, (carrier_name, status, effective, address, telephone, fax, email_address, contact_person, terminal_auth, carrier))
+        else:
+            cursor.execute("""
+                INSERT INTO carrier_info (carrier, carrier_name, status, effective, address, telephone, fax, email_address, contact_person, terminal_auth)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+            """, (carrier, carrier_name, status, effective, address, telephone, fax, email_address, contact_person, terminal_auth))
+
+    except Exception as e:
+        logging.error("The data you are trying to update is not present in the database; insert it first.")
+        logging.error(f"Error details: {e}")
+
 
 
 def create_drivers_table(cursor):
