@@ -12,8 +12,8 @@ def create_carrier_info_table(cursor):
         status VARCHAR(255),
         effective VARCHAR(255),
         address VARCHAR(255),
-        telephone VARCHAR(20),
-        fax VARCHAR(20),
+        telephone VARCHAR(255),
+        fax VARCHAR(255),
         email_address VARCHAR(255),
         contact_person VARCHAR(255),
         terminal_auth BOOLEAN
@@ -44,7 +44,6 @@ def insert_data_into_carrier_info_table(cursor, data):
             """, (carrier, carrier_name, status, effective, address, telephone, fax, email_address, contact_person, terminal_auth))
 
     except Exception as e:
-        logging.error("The data you are trying to update is not present in the database; insert it first.")
         logging.error(f"Error details: {e}")
 
 
@@ -52,7 +51,7 @@ def insert_data_into_carrier_info_table(cursor, data):
 def create_drivers_table(cursor):
     table_schema = '''
         CREATE TABLE IF NOT EXISTS drivers (
-            sea_link VARCHAR(20),
+            sea_link VARCHAR(255),
             auth BOOLEAN,
             name VARCHAR(255),
             status VARCHAR(255),
@@ -91,7 +90,6 @@ def insert_data_into_drivers_table(cursor, drivers, carrier_name):
                 """, (sea_link, auth, name, status, relationship, carrier_name))
 
         except Exception as e:
-            logging.error("The data you are trying to update is not present in the database; insert it first.")
             logging.error(f"Error occurred: {e}")
 
 
@@ -133,7 +131,6 @@ def insert_data_into_line_auth_table(cursor, line_auth, carrier_name):
                         VALUES (%s, %s, %s, %s)
                     """, (line, auth, line_carrier, carrier_name))
         except Exception as e:
-            logging.error("The data you are trying to update is not present in the database; insert it first.")
             logging.error(f"Error occurred: {e}")
 
 def create_notes_table(cursor):
@@ -167,5 +164,4 @@ def insert_notes_data(cursor, notes, carrier_name):
                 VALUES (%s, %s)
             """, (notes, carrier_name))
     except Exception as e:
-        logging.error("The data you are trying to update is not present in the database; insert it first.")
         logging.error(f"Error occurred: {e}")
