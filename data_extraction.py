@@ -32,15 +32,25 @@ def extract_carrier_info(soup):
         carrier_text = carrier_row.get_text(strip=True)
         carrier_info['Carrier'] = carrier_text.replace('\xa0','').split(':')[0].strip()
         carrier_info['Carrier Name'] = (carrier_text.replace('\xa0', '').split(':', 1) + [''])[1].strip()
-
+    
     other_rows = soup.find_all('tr')
+    address_not_found = True
     for row in other_rows:
         labels = row.find_all('td', class_='edit_label')
         data_entries = row.find_all('td', class_='edit_data')
+
         for label, data in zip(labels, data_entries):
             label_text = label.get_text(strip=True).replace('\xa0', ' ')
             data_text = data.get_text(strip=True).replace('\xa0', ' ')
-            carrier_info[label_text] = data_text
+            if label_text != 'Address':
+                carrier_info[label_text] = data_text
+
+            address = row.find_all('td', class_='edit_data', colspan='5')
+            if address and address_not_found:
+                address_txt = address[0].get_text(strip=True).replace('\xa0', ' ')
+                address_txt += " " + address[1].get_text(strip=True).replace('\xa0', ' ')
+                carrier_info['Address'] = address_txt
+                address_not_found = False
 
         checkbox_input = row.find('input', {'type': 'checkbox'})
         value = 'true' if checkbox_input and 'checked' in checkbox_input.attrs else 'false'
@@ -53,6 +63,7 @@ def extract_carrier_info(soup):
 
     terminal_auth_str = carrier_info.get('Terminal Auth', '').lower()
     terminal_auth = True if terminal_auth_str == 'true' else False
+    
     data = (
         carrier_info.get('Carrier', '').split(':')[0].strip(),
         carrier_info.get('Carrier Name', ''),

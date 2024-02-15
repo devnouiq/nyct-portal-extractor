@@ -117,10 +117,14 @@ This script is designed to scrape data from a specific website and store it in a
 
 3. Run the script with the following command:
 
-   1. **Update Specific Carrier:**
+   1. **Update Tables:**
       - To update data for a specific carrier, use the following command:
       ```bash
-      python script.py --name "carrier-name" --operation_type update
+      python script.py --name "carrier-name" --operation_type update --type specific
+      ```
+      - To update data from a specific carrier to the end of the table, use the following command:
+      ```bash
+      python script.py --name "carrier-name" --operation_type update --type all
       ```
 
    2. **Normal Operation:**

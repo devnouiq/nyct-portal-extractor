@@ -58,6 +58,17 @@ def table_exists(cursor, table_name):
 def connect_to_database():
     return psycopg2.connect(**DB_CONFIG)
 
+def get_carrier_id(cursor, carrier):
+    cursor.execute("SELECT carrier_id FROM carrier_info WHERE carrier = %s",(carrier,))
+    return cursor.fetchone()[0]
+
+def get_last_carrier_id(cursor):
+    cursor.execute("SELECT carrier_id FROM carrier_info ORDER BY carrier_id DESC LIMIT 1;")
+    return cursor.fetchone()[0]
+
+def get_carrier(cursor, carrier_id):
+    cursor.execute("SELECT carrier FROM carrier_info WHERE carrier_id = %s", (carrier_id,))
+    return cursor.fetchone()[0]
 
 def run_single_request(url, cursor, sleep_interval,conn, args):
     time.sleep(sleep_interval)  # Sleep for the specified interval
@@ -90,21 +101,30 @@ def fetch_and_process_data(args, cursor, last_carrier_id,conn):
                     url = f"{BASE_URL}?pageId=61&tabId=&scac={name}"
                     logger.info(f"Running for carrier: {name}")
                     run_single_request(url, cursor, sleep_interval,conn, args)
-
                 start_value += 20
     elif args.operation_type == "update" and args.name:
-        logger.info(f"Updating data for specific carrier: {args.name}")
-        url = f"{BASE_URL}?pageId=61&tabId=&scac={args.name}"
-        run_single_request(url, cursor, sleep_interval, conn, args)
+        if args.type == "specific":
+            logger.info(f"Updating data for specific carrier: {args.name}")
+            url = f"{BASE_URL}?pageId=61&tabId=&scac={args.name}"
+            run_single_request(url, cursor, sleep_interval, conn, args)
+        elif args.type == "all":
+            start_value = get_carrier_id(cursor, args.name)
+            end_value = get_last_carrier_id(cursor)
+            for i in range(start_value, end_value+1):
+                name = get_carrier(cursor, i)
+                url = f"{BASE_URL}?pageId=61&tabId=&scac={name}"
+                logger.info(f"Running for carrier: {name}")
+                run_single_request(url, cursor, sleep_interval,conn, args)
+        else:
+            logger.info("specify the --type argument")
         
-
-
 def main():
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--name', help='Specify a carrier name for the URL')
     parser.add_argument('--count', type=int, help='Specify number of requests to scrape',default=10)
     parser.add_argument('--sleep', type=int, help='Specify the sleep interval in seconds',default=1)
     parser.add_argument('--operation_type', help='Specify the operation type',default='new', choices=['new', 'update'])
+    parser.add_argument('--type', help='Specify the type', default='specific', choices=['specific', 'all']) # only works with update operation
 
     args = parser.parse_args()
 
@@ -114,13 +134,11 @@ def main():
     with connect_to_database() as conn:
         with conn.cursor() as cursor:
             if table_exists(cursor, "carrier_info"):
-                cursor.execute("SELECT carrier_id FROM carrier_info ORDER BY carrier_id DESC LIMIT 1;")
-                last_carrier_id = cursor.fetchone()[0] if cursor.rowcount else 0
+                last_carrier_id = get_last_carrier_id(cursor) if cursor.rowcount else 0
             else:
                 last_carrier_id = 0
 
             fetch_and_process_data(args, cursor, last_carrier_id,conn)
             
-
 if __name__ == "__main__":
     main()
