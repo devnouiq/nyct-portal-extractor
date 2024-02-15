@@ -49,6 +49,8 @@ def extract_carrier_info(soup):
             if address and address_not_found:
                 address_txt = address[0].get_text(strip=True).replace('\xa0', ' ')
                 address_txt += " " + address[1].get_text(strip=True).replace('\xa0', ' ')
+                if address[2]:
+                    address_txt += " " + address[2].get_text(strip=True).replace('\xa0', ' ')
                 carrier_info['Address'] = address_txt
                 address_not_found = False
 
