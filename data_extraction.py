@@ -34,7 +34,7 @@ def extract_carrier_info(soup):
         carrier_info['Carrier Name'] = (carrier_text.replace('\xa0', '').split(':', 1) + [''])[1].strip()
     
     other_rows = soup.find_all('tr')
-    address_not_found = True
+
     for row in other_rows:
         labels = row.find_all('td', class_='edit_label')
         data_entries = row.find_all('td', class_='edit_data')
@@ -44,15 +44,16 @@ def extract_carrier_info(soup):
             data_text = data.get_text(strip=True).replace('\xa0', ' ')
             if label_text != 'Address':
                 carrier_info[label_text] = data_text
-
-            address = row.find_all('td', class_='edit_data', colspan='5')
-            if address and address_not_found:
-                address_txt = address[0].get_text(strip=True).replace('\xa0', ' ')
-                address_txt += " " + address[1].get_text(strip=True).replace('\xa0', ' ')
-                if address[2]:
-                    address_txt += " " + address[2].get_text(strip=True).replace('\xa0', ' ')
+        
+        for i in range(len(data_entries)-1):
+            label_text = labels[i].get_text(strip=True).replace('\xa0', ' ')
+            if label_text == 'Address':
+                address_txt = data_entries[i].get_text(strip=True).replace('\xa0', ' ')
+                address_txt += " " + data_entries[i+1].get_text(strip=True).replace('\xa0', ' ')
+                if data_entries[i+2] is not None and 'colspan' in data_entries[i+2].attrs:
+                    address_txt += " " + data_entries[i+2].get_text(strip=True).replace('\xa0', ' ')
                 carrier_info['Address'] = address_txt
-                address_not_found = False
+                break
 
         checkbox_input = row.find('input', {'type': 'checkbox'})
         value = 'true' if checkbox_input and 'checked' in checkbox_input.attrs else 'false'
